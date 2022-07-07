@@ -255,7 +255,7 @@ function debugInfo() {
     debugText+= '-, -)';
   }
   debugText+= '\nORIGINAL SIZE: ('+String(img.width)+', '+String(img.height)+')';
-  debugText+= '\nCROP SIZE: ('+String(round(abs(cropA[0]-cropA[2])/zoom))+', ';
+  debugText+= '\nCROP SIZE: ('+String(round(abs(cropA[0]-cropA[2])/zoom))+', '; // Pensar dónde computar los tamaños del crop
   debugText+= String(round(abs(cropA[1]-cropA[3])/zoom))+')';
   text(debugText, 3, height);
 }
