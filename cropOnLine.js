@@ -29,13 +29,23 @@ let bgc = 35,
     format, // Format of currently opened picture
     http,
     error = false,
+    onEscKey,
     zoom = 1.0,
-    maxZ = 20.0,
+    maxZ = 50.0,
     minZ = 0.05,
+    wheelDelta,
+    zoomInW,
+    zoomOutW,
+    hRef,
+    vRef,
     hPan = 0,
     vPan = 0,
-    newLoad = false,
-    img; // p5.Image object containing the loaded picture
+    xCoord,
+    yCoord,
+    newLoad = false, // Switch for running code once
+    img,
+    onImg = false,
+    debugText; // p5.Image object containing the loaded picture
 
 
 
@@ -73,16 +83,21 @@ function draw() {
   onLoadButton = false;
   onEnterKey = false;
   onEscKey = false;
+  onImg = false;
   loadGUI();
 
   if (img) {
     if (newLoad) {
       newLoad = false;
       reCenter();
+      hRef = (width -img.width *zoom)/2;
+      vRef = (height-img.height*zoom)/2;
     }
     updateZoom(minZ, maxZ);
     updatePan();
+    mousePosToMatrixIndex();
     image(img, width/2+hPan*zoom, height/2+vPan*zoom, img.width*zoom, img.height*zoom);
+    debugInfo();
   }
 }
 
@@ -100,7 +115,19 @@ function updateZoom(min, max) {
     if (mouseButton === CENTER) {
       zoom -= 2*zoom*(mouseY-pmouseY)/height;
     }
-  } 
+  }
+  if (wheelDelta) {
+    zoomInW  = wheelDelta < 0;
+    zoomOutW = wheelDelta > 0;
+    if (zoomInW) {
+      zoom *= 1.15;
+    } else {
+      zoom *= 0.85;
+    }
+    wheelDelta = 0;
+    zoomInW = false
+    zoomOutW = false
+  }
   zoom = constrain(zoom, min, max);
 }
 
@@ -120,13 +147,14 @@ function updatePan() {
   } if (d) {
     vPan -= 10/zoom;
   }
-  
   if (mouseIsPressed) {
     if (mouseButton === RIGHT) {
       hPan += (mouseX-pmouseX)/zoom;
       vPan += (mouseY-pmouseY)/zoom;
     }
   }
+  hRef = (width -img.width *zoom)/2 + hPan*zoom;
+  vRef = (height-img.height*zoom)/2 + vPan*zoom;
 }
 
 
@@ -139,16 +167,43 @@ function reCenter() {
 
 
 
+function mousePosToMatrixIndex() {
+  xCoord = floor((mouseX-hRef)/zoom);
+  yCoord = floor((mouseY-vRef)/zoom);
+  onImg  = xCoord >= 0 && xCoord < img.width && yCoord >= 0 && yCoord < img.height;
+}
+
+
+
+function debugInfo() {
+  textAlign(LEFT, BOTTOM);
+  textFont('calibri');
+  textStyle(NORMAL);
+  fill(255,160);
+  stroke(0,160);
+  strokeWeight(3);
+  textSize(15);
+  debugText = 'ZOOM: '+String(zoom.toFixed(3))+'\nPIXEL COORDS: (';
+  if (onImg) {
+    debugText+= String(xCoord)+', '+String(yCoord)+')';
+  } else {
+    debugText+= '-, -)';
+  }
+  debugText+= '\nORIGINAL SIZE: ('+String(img.width)+', '+String(img.height)+')';
+  text(debugText, 3, height);
+}
+
+
+
 function loadGUI() {
-  if (!loaded) {
+  if (!loaded) { // Load menu
     link = linkField.value();
     valid = formatList.includes(link.slice(-4, link.length));
     loadButton(loadButtonX, loadButtonY);
     drawLoadingInfoUI();
     drawEnterKey();
   } 
-  
-  if (loaded && !img) {
+  if (loaded && !img) { // Loading/Error
     textFont('helvetica');
     textAlign(CENTER, CENTER);
     fill(180);
@@ -282,6 +337,12 @@ function mousePressed() {
   if (onEscKey) {
     reLoad();
   }
+}
+
+
+
+function mouseWheel(event) {
+  wheelDelta = event.delta;
 }
 
 
