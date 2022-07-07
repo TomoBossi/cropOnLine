@@ -5,6 +5,8 @@
 // https://p5js.org/reference/#/p5/createInput
 
 p5.disableFriendlyErrors = false;
+document.addEventListener("keydown", (e) => e.ctrlKey && e.preventDefault()); // Prevent default ctrl + key functionality
+document.addEventListener("contextmenu", (e) => e.preventDefault()); // Prevent context menu popup on right click
 
 let bgc = 35,
     uibc,
@@ -27,6 +29,12 @@ let bgc = 35,
     format, // Format of currently opened picture
     http,
     error = false,
+    zoom = 1.0,
+    maxZ = 20.0,
+    minZ = 0.05,
+    hPan = 0,
+    vPan = 0,
+    newLoad = false,
     img; // p5.Image object containing the loaded picture
 
 
@@ -65,6 +73,73 @@ function draw() {
   onLoadButton = false;
   onEnterKey = false;
   onEscKey = false;
+  loadGUI();
+
+  if (img) {
+    if (newLoad) {
+      newLoad = false;
+      reCenter();
+    }
+    updateZoom(minZ, maxZ);
+    updatePan();
+    image(img, width/2+hPan*zoom, height/2+vPan*zoom, img.width*zoom, img.height*zoom);
+  }
+}
+
+
+
+function updateZoom(min, max) {
+  zoomInKb  = keyIsPressed && (key === '+');
+  zoomOutKb = keyIsPressed && (key === '-');
+  if (zoomInKb) {
+    zoom *= 1.04;
+  } else if (zoomOutKb) {
+    zoom *= 0.96;
+  } 
+  if (mouseIsPressed) {
+    if (mouseButton === CENTER) {
+      zoom -= 2*zoom*(mouseY-pmouseY)/height;
+    }
+  } 
+  zoom = constrain(zoom, min, max);
+}
+
+
+
+function updatePan() {
+  let r = keyIsDown(RIGHT_ARROW) || keyIsDown(68);
+  let l = keyIsDown(LEFT_ARROW) || keyIsDown(65);
+  let u = keyIsDown(UP_ARROW) || keyIsDown(87);
+  let d = keyIsDown(DOWN_ARROW) || keyIsDown(83);
+  if (r) {
+    hPan -= 10/zoom;
+  } if (l) {
+    hPan += 10/zoom;
+  } if (u) {
+    vPan += 10/zoom;
+  } if (d) {
+    vPan -= 10/zoom;
+  }
+  
+  if (mouseIsPressed) {
+    if (mouseButton === RIGHT) {
+      hPan += (mouseX-pmouseX)/zoom;
+      vPan += (mouseY-pmouseY)/zoom;
+    }
+  }
+}
+
+
+
+function reCenter() {
+  hPan = 0;
+  vPan = 0;
+  zoom = min(width*0.9/img.width, height*0.9/img.height, 1.0);
+}
+
+
+
+function loadGUI() {
   if (!loaded) {
     link = linkField.value();
     valid = formatList.includes(link.slice(-4, link.length));
@@ -87,10 +162,6 @@ function draw() {
     } else {
       text('Loading...', width/2, height/2);
     }
-  }
-
-  if (img) {
-    image(img, width/2, height/2, img.width, img.height);
   }
 }
 
@@ -199,7 +270,7 @@ function drawEscKey(x, y) {
   fill(255);
   stroke(0, 50);
   strokeWeight(3);
-  text('ESC', x, y+uipx/200);
+  text('ESC', x, y+uipx/100);
 }
 
 
@@ -209,7 +280,7 @@ function mousePressed() {
     loadFromURL(link);
   }
   if (onEscKey) {
-    reset();
+    reLoad();
   }
 }
 
@@ -217,18 +288,21 @@ function mousePressed() {
 
 function keyPressed() {
   // https://www.toptal.com/developers/keycode
-  console.log(keyCode);
+  // console.log(keyCode);
   if (keyCode === 27) {
-    reset();
+    reLoad();
   }
   if (valid && keyCode === 13) {
     loadFromURL(link);
+  }
+  if (img && keyCode === 82) {
+    reCenter();
   }
 }
 
 
 
-function reset() {
+function reLoad() {
   img = null;
   loaded = false;
   error = false;
@@ -242,6 +316,7 @@ function getImage(e) { // File upload from disk
   let data64 = reader.result;
   try {
     loadImage(data64, function (newImage) { img = newImage });
+    newLoad = true;
     error = false;
   } catch {
     error = true;
@@ -252,6 +327,7 @@ function getImage(e) { // File upload from disk
   linkField.hide();
   reader.onload = getImage;
   reader.readAsDataURL(file.file);
+
 } function loadFromURL(URL) { // File upload from URL https://c.tenor.com/NFjEeHbk-zwAAAAC/cat.gif
   try {
     error = !UrlExists(URL);
@@ -260,6 +336,7 @@ function getImage(e) { // File upload from disk
   }
   if (!error) {
     loadImage(URL, function (newImage) { img = newImage });
+    newLoad = true;
   }
   loaded = true;
   load.hide();
