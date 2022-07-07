@@ -106,6 +106,11 @@ function draw() {
     updateZoom(minZ, maxZ);
     updatePan();
     mousePosToMatrixIndex();
+    if (onImg) {
+      cursor('grab');
+    } else {
+      cursor(ARROW)
+    }
     // Image
     image(img, width/2+hPan*zoom, height/2+vPan*zoom, img.width*zoom, img.height*zoom);
     // Dynamic overlay
@@ -119,11 +124,6 @@ function draw() {
     onCropBottom = abs(mouseY-cropA[3])<cropMinDistBorder;
     onCropLeft = abs(mouseX-cropA[0])<cropMinDistBorder;
     onCropRight = abs(mouseX-cropA[2])<cropMinDistBorder;
-    if (onCropTop || onCropBottom || onCropLeft || onCropRight) {
-      cursor('grab');
-    } else {
-      cursor(ARROW)
-    }
     if (onCropTop && onCropBottom) {
       if (abs(mouseY-cropA[1])<abs(mouseY-cropA[3])) {
         onCropBottom = false;
