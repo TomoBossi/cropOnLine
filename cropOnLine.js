@@ -241,7 +241,7 @@ function reset() {
 function getImage(e) { // File upload from disk
   let data64 = reader.result;
   try {
-    loadImage(data64, function (newImage) { img = newImage }); // Try, based on format
+    loadImage(data64, function (newImage) { img = newImage });
     error = false;
   } catch {
     error = true;
@@ -253,9 +253,13 @@ function getImage(e) { // File upload from disk
   reader.onload = getImage;
   reader.readAsDataURL(file.file);
 } function loadFromURL(URL) { // File upload from URL https://c.tenor.com/NFjEeHbk-zwAAAAC/cat.gif
-  error = !UrlExists(URL);
+  try {
+    error = !UrlExists(URL);
+  } catch {
+    error = true;
+  }
   if (!error) {
-    loadImage(URL, function (newImage) { img = newImage }); // Try, based on image existing
+    loadImage(URL, function (newImage) { img = newImage });
   }
   loaded = true;
   load.hide();
@@ -268,5 +272,6 @@ function UrlExists(URL) {
   http = new XMLHttpRequest();
   http.open('HEAD', URL, false);
   http.send();
-  return http.status != 404
+  console.log(http.status);
+  return ![0, 404].includes(http.status)
 }
