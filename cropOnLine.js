@@ -45,6 +45,13 @@ let bgc = 35,
     newLoad = false, // Switch for running code once
     img,
     onImg = false,
+    cropA, // Crop area
+    cropMinDistBorder = 15,
+    onCropTop = false,
+    onCropBottom = false,
+    onCropRight = false,
+    onCropLeft = false,
+    cropping = false, // Currently modifying crop area
     debugText; // p5.Image object containing the loaded picture
 
 
@@ -84,8 +91,11 @@ function draw() {
   onEnterKey = false;
   onEscKey = false;
   onImg = false;
+  onCropTop = false;
+  onCropBottom = false;
+  onCropRight = false;
+  onCropLeft = false;
   loadGUI();
-
   if (img) {
     if (newLoad) {
       newLoad = false;
@@ -96,7 +106,62 @@ function draw() {
     updateZoom(minZ, maxZ);
     updatePan();
     mousePosToMatrixIndex();
+    // Image
     image(img, width/2+hPan*zoom, height/2+vPan*zoom, img.width*zoom, img.height*zoom);
+    // Dynamic overlay
+    cropA = [hRef, vRef, hRef+img.width*zoom, vRef+img.height*zoom]; // Pensar en cómo actualizar
+    fill(127.5+127.5*cos(frameCount/10), 20);
+    rectMode(CORNERS);
+    noStroke();
+    rect(...cropA);
+    rectMode(CENTER);
+    onCropTop = abs(mouseY-cropA[1])<cropMinDistBorder;
+    onCropBottom = abs(mouseY-cropA[3])<cropMinDistBorder;
+    onCropLeft = abs(mouseX-cropA[0])<cropMinDistBorder;
+    onCropRight = abs(mouseX-cropA[2])<cropMinDistBorder;
+    if (onCropTop || onCropBottom || onCropLeft || onCropRight) {
+      cursor('grab');
+    } else {
+      cursor(ARROW)
+    }
+    if (onCropTop && onCropBottom) {
+      if (abs(mouseY-cropA[1])<abs(mouseY-cropA[3])) {
+        onCropBottom = false;
+      } else {
+        onCropTop = false;
+      }
+    }
+    if (onCropLeft && onCropRight) {
+      if (abs(mouseX-cropA[0])<abs(mouseX-cropA[2])) {
+        onCropRight = false;
+      } else {
+        onCropLeft = false;
+      }
+    }
+    // Rulers
+    stroke(255, 70);
+    strokeWeight(1+2*onCropTop);
+    line(0, cropA[1], width, cropA[1]); // Top
+    strokeWeight(1+2*onCropBottom);
+    line(0, cropA[3], width, cropA[3]); // Bottom
+    strokeWeight(1+2*onCropLeft);
+    line(cropA[0], 0, cropA[0], height); // Left
+    strokeWeight(1+2*onCropRight);
+    line(cropA[2], 0, cropA[2], height); // Right
+    // Borders
+    strokeWeight(1+2*onCropTop);
+    stroke(127.5+127.5*sin(frameCount/10), 100+155*onCropTop);
+    line(cropA[0], cropA[1], cropA[2], cropA[1]); // Top
+    strokeWeight(1+2*onCropBottom);
+    stroke(127.5+127.5*sin(frameCount/10), 100+155*onCropBottom);
+    line(cropA[0], cropA[3], cropA[2], cropA[3]); // Bottom
+    strokeWeight(1+2*onCropLeft);
+    stroke(127.5+127.5*sin(frameCount/10), 100+155*onCropLeft);
+    line(cropA[0], cropA[1], cropA[0], cropA[3]); // Left
+    strokeWeight(1+2*onCropRight);
+    stroke(127.5+127.5*sin(frameCount/10), 100+155*onCropRight);
+    line(cropA[2], cropA[1], cropA[2], cropA[3]); // Right
+    // Debug
     debugInfo();
   }
 }
@@ -190,6 +255,8 @@ function debugInfo() {
     debugText+= '-, -)';
   }
   debugText+= '\nORIGINAL SIZE: ('+String(img.width)+', '+String(img.height)+')';
+  debugText+= '\nCROP SIZE: ('+String(round(abs(cropA[0]-cropA[2])/zoom))+', ';
+  debugText+= String(round(abs(cropA[1]-cropA[3])/zoom))+')';
   text(debugText, 3, height);
 }
 
