@@ -1,2 +1,2 @@
 # CropOnLine
-Fancy Online Image Cropping Tool
+Fancy Online Image Cropping Tool (WIP)
