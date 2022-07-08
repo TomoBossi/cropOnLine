@@ -120,6 +120,7 @@ function draw() {
   onEnterKey = false;
   onEscKey = false;
   onImg = false;
+  cursor(ARROW);
   if (!cropping) {
     onCropTop = false;
     onCropBottom = false;
@@ -536,19 +537,22 @@ function getImage(e) { // File upload from disk
   // data:image/png;base64,iVBORw0KGgo
   // data:image/jpeg;base64,/9j/4QC8RX
   // data:image/gif;base64,R0lGODlh9AE
-  // data:application/octet-stream;bas
-  try {
-    loadImage(data64, function (newImage) { img = newImage });
-    newLoad = true;
-    format = data64.slice(11,14);
-    if (format == 'jpe') {
-      format = 'jpg';
-    } 
-    if (!formatList.includes('.'+format)) {
-      format = 'png';
+  if (data64.slice(5,10) == 'image') {
+    try {
+      loadImage(data64, function (newImage) { img = newImage });
+      newLoad = true;
+      format = data64.slice(11,14);
+      if (format == 'jpe') {
+        format = 'jpg';
+      } 
+      if (!formatList.includes('.'+format)) {
+        format = 'png';
+      }
+      error = false;
+    } catch {
+      error = true;
     }
-    error = false;
-  } catch {
+  } else {
     error = true;
   }
 } function loadFile(file) {
@@ -591,7 +595,7 @@ function saveCropImg() {
     w = round(abs(cropA[0]-cropA[2])/zoom);
     h = round(abs(cropA[1]-cropA[3])/zoom);
     cropImg = createImage(w, h);
-    if (format == 'gif') {
+    if (format == 'gif' && false) {
       //cropImg.gifProperties = img.gifProperties; // Not deep copy, shared references.
       // Possible solution: Build cropImg.gifProperties from the ground-up. Makes code more susceptible to break with future updates. All properties except "frames" are easy:
       cropImg.gifProperties = {};
