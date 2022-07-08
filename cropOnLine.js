@@ -5,7 +5,7 @@
 // https://p5js.org/reference/#/p5/createInput
 
 p5.disableFriendlyErrors = false;
-document.addEventListener("keydown", (e) => e.ctrlKey && e.preventDefault()); // Prevent default ctrl + key functionality
+// document.addEventListener("keydown", (e) => e.ctrlKey && e.preventDefault()); // Prevent default ctrl + key functionality
 document.addEventListener("contextmenu", (e) => e.preventDefault()); // Prevent context menu popup on right click
 
 let bgc = 50,
@@ -47,11 +47,21 @@ let bgc = 50,
     onImg = false,
     cropA, // Crop area
     cropMinDistBorder = 15,
+    cropTopDisp = 0,
+    cropBottomDisp = 0,
+    cropRightDisp = 0,
+    cropLeftDisp = 0,
+    xCoordDisp,
+    yCoordDisp,
     onCropTop = false,
     onCropBottom = false,
     onCropRight = false,
     onCropLeft = false,
     onCropA = false,
+    onCropAmouseX,
+    onCropAMouseY,
+    slideDispX = 0,
+    slideDispY = 0,
     cropping = false, // Currently modifying crop area
     debugText; // p5.Image object containing the loaded picture
 
@@ -78,7 +88,7 @@ function setup() {
   linkField = createInput('', 'text');
   linkField.size(uipx-8, 15);
   linkField.position(loadButtonX-linkField.size().width/2, loadButtonD+10);
-  linkField.attribute('placeholder', '... or enter an image URL');
+  linkField.attribute('placeholder', '... or enter an image URL (CTRL+V)');
   
   uibc = color(20, 110, 130);
   uihc = color(100, 250, 250);
@@ -92,11 +102,13 @@ function draw() {
   onEnterKey = false;
   onEscKey = false;
   onImg = false;
-  onCropTop = false;
-  onCropBottom = false;
-  onCropRight = false;
-  onCropLeft = false;
-  onCropA = false;
+  if (!cropping) {
+    onCropTop = false;
+    onCropBottom = false;
+    onCropRight = false;
+    onCropLeft = false;
+    onCropA = false;
+  }
   loadGUI();
   if (img) {
     if (newLoad) {
@@ -104,6 +116,12 @@ function draw() {
       reCenter();
       hRef = (width -img.width *zoom)/2;
       vRef = (height-img.height*zoom)/2;
+      cropTopDisp = 0;
+      cropBottomDisp = 0;
+      cropRightDisp = 0;
+      cropLeftDisp = 0;
+      slideDispX = 0;
+      slideDispY = 0;
     }
     updateZoom(minZ, maxZ);
     updatePan();
@@ -111,23 +129,27 @@ function draw() {
     // Image
     image(img, width/2+hPan*zoom, height/2+vPan*zoom, img.width*zoom, img.height*zoom);
     // Dynamic overlay
-    cropA = [hRef, vRef, hRef+img.width*zoom, vRef+img.height*zoom]; // Pensar en cómo actualizar
+    cropA = [hRef+(cropLeftDisp+slideDispX)*zoom, vRef+(cropTopDisp+slideDispY)*zoom, hRef+(img.width+cropRightDisp+slideDispX)*zoom, vRef+(img.height+cropBottomDisp+slideDispY)*zoom]; // Pensar en cómo actualizar
     if (cropA[0]>cropA[2]) {
       cropA = [cropA[2], cropA[1], cropA[0], cropA[3]]
     }
     if (cropA[1]>cropA[3]) {
       cropA = [cropA[0], cropA[3], cropA[2], cropA[1]]
     }
-
     fill(127.5+127.5*cos(frameCount/10), 35);
     rectMode(CORNERS);
     noStroke();
     rect(...cropA);
     rectMode(CENTER);
-    onCropTop = abs(mouseY-cropA[1])<cropMinDistBorder;
-    onCropBottom = abs(mouseY-cropA[3])<cropMinDistBorder;
-    onCropLeft = abs(mouseX-cropA[0])<cropMinDistBorder;
-    onCropRight = abs(mouseX-cropA[2])<cropMinDistBorder;
+    if (!cropping) {
+      onCropTop = abs(mouseY-cropA[1])<cropMinDistBorder;
+      onCropBottom = abs(mouseY-cropA[3])<cropMinDistBorder;
+      onCropLeft = abs(mouseX-cropA[0])<cropMinDistBorder;
+      onCropRight = abs(mouseX-cropA[2])<cropMinDistBorder;
+      onCropA = mouseX>cropA[0] && mouseX<cropA[2] && mouseY>cropA[1] && mouseY<cropA[3];
+      onCropAMouseX = xCoord;
+      onCropAMouseY = yCoord;
+    }
     if (onCropTop && onCropBottom) {
       if (abs(mouseY-cropA[1])<abs(mouseY-cropA[3])) {
         onCropBottom = false;
@@ -142,40 +164,70 @@ function draw() {
         onCropLeft = false;
       }
     }
-    onCropA = mouseX>cropA[0] && mouseX<cropA[2] && mouseY>cropA[1] && mouseY<cropA[3];
     if (onCropA || onCropTop || onCropBottom || onCropLeft || onCropRight) {
       cursor('grab');
     } else {
       cursor(ARROW)
     }
     // Rulers
-    strokeWeight(1+2*onCropTop);
+    strokeWeight(1+2*onCropTop*!cropping);
     stroke(127.5+127.5*!onCropTop+onCropTop*127.5*sin(frameCount/10), 50+100*onCropTop);
     line(0, cropA[1], width, cropA[1]); // Top
-    strokeWeight(1+2*onCropBottom);
+    strokeWeight(1+2*onCropBottom*!cropping);
     stroke(127.5+127.5*!onCropBottom+onCropBottom*127.5*sin(frameCount/10), 50+100*onCropBottom);
     line(0, cropA[3], width, cropA[3]); // Bottom
-    strokeWeight(1+2*onCropLeft);
+    strokeWeight(1+2*onCropLeft*!cropping);
     stroke(127.5+127.5*!onCropLeft+onCropLeft*127.5*sin(frameCount/10), 50+100*onCropLeft);
     line(cropA[0], 0, cropA[0], height); // Left
-    strokeWeight(1+2*onCropRight);
+    strokeWeight(1+2*onCropRight*!cropping);
     stroke(127.5+127.5*!onCropRight+onCropRight*127.5*sin(frameCount/10), 50+100*onCropRight);
     line(cropA[2], 0, cropA[2], height); // Right
     // Borders
-    strokeWeight(1+2*onCropTop);
+    strokeWeight(1+2*onCropTop*!cropping);
     stroke(127.5+127.5*sin(frameCount/10), 150+105*onCropTop);
     line(cropA[0], cropA[1], cropA[2], cropA[1]); // Top
-    strokeWeight(1+2*onCropBottom);
+    strokeWeight(1+2*onCropBottom*!cropping);
     stroke(127.5+127.5*sin(frameCount/10), 150+105*onCropBottom);
     line(cropA[0], cropA[3], cropA[2], cropA[3]); // Bottom
-    strokeWeight(1+2*onCropLeft);
+    strokeWeight(1+2*onCropLeft*!cropping);
     stroke(127.5+127.5*sin(frameCount/10), 150+105*onCropLeft);
     line(cropA[0], cropA[1], cropA[0], cropA[3]); // Left
-    strokeWeight(1+2*onCropRight);
+    strokeWeight(1+2*onCropRight*!cropping);
     stroke(127.5+127.5*sin(frameCount/10), 150+105*onCropRight);
     line(cropA[2], cropA[1], cropA[2], cropA[3]); // Right
     // Debug
     debugInfo();
+
+    if (mouseIsPressed && mouseButton === LEFT && (onCropA || onCropTop || onCropBottom || onCropLeft || onCropRight)) {
+      cropping = true;
+      if (onCropTop || onCropBottom || onCropLeft || onCropRight) {
+        if (onCropTop) {
+          // cropTopDisp = constrain(yCoordDisp, 0, img.height); // Full range, buggy
+          cropTopDisp = constrain(yCoordDisp, 0, img.height+cropBottomDisp-1);
+        } else if (onCropBottom) {
+          // cropBottomDisp = constrain(-img.height+yCoordDisp, -img.height, 0); // Full range, buggy
+          cropBottomDisp = constrain(-img.height+yCoordDisp, -img.height+cropTopDisp+1, 0);
+        }
+        if (onCropLeft) {
+          // cropLeftDisp = constrain(xCoordDisp, 0, img.width); // Full range, buggy
+          cropLeftDisp = constrain(xCoordDisp, 0, img.width+cropRightDisp-1);
+        } else if (onCropRight) {
+          // cropRightDisp = constrain(-img.width+xCoordDisp, -img.width, 0); // Full range, buggy
+          cropRightDisp = constrain(-img.width+xCoordDisp, -img.width+cropLeftDisp+1, 0);
+        }
+      } else if (onCropA) {
+        slideDispX = constrain(xCoord-onCropAMouseX, -cropLeftDisp, -cropRightDisp);
+        slideDispY = constrain(yCoord-onCropAMouseY, -cropTopDisp, -cropBottomDisp);
+      }
+    } else {
+      cropping = false;
+      cropTopDisp += slideDispY
+      cropBottomDisp += slideDispY
+      cropLeftDisp += slideDispX
+      cropRightDisp += slideDispX
+      slideDispX = 0;
+      slideDispY = 0;
+    }
   }
 }
 
@@ -248,6 +300,8 @@ function reCenter() {
 function mousePosToMatrixIndex() {
   xCoord = floor((mouseX-hRef)/zoom);
   yCoord = floor((mouseY-vRef)/zoom);
+  xCoordDisp = round((mouseX-hRef)/zoom);
+  yCoordDisp = round((mouseY-vRef)/zoom);
   onImg  = xCoord >= 0 && xCoord < img.width && yCoord >= 0 && yCoord < img.height;
 }
 
