@@ -595,7 +595,7 @@ function saveCropImg() {
     w = round(abs(cropA[0]-cropA[2])/zoom);
     h = round(abs(cropA[1]-cropA[3])/zoom);
     cropImg = createImage(w, h);
-    if (format == 'gif' && false) {
+    if (format == 'gif') {
       //cropImg.gifProperties = img.gifProperties; // Not deep copy, shared references.
       // Possible solution: Build cropImg.gifProperties from the ground-up. Makes code more susceptible to break with future updates. All properties except "frames" are easy:
       cropImg.gifProperties = {};
