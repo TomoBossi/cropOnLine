@@ -106,11 +106,6 @@ function draw() {
     updateZoom(minZ, maxZ);
     updatePan();
     mousePosToMatrixIndex();
-    if (onImg) {
-      cursor('grab');
-    } else {
-      cursor(ARROW)
-    }
     // Image
     image(img, width/2+hPan*zoom, height/2+vPan*zoom, img.width*zoom, img.height*zoom);
     // Dynamic overlay
@@ -137,6 +132,11 @@ function draw() {
       } else {
         onCropLeft = false;
       }
+    }
+    if (onImg || onCropTop || onCropBottom || onCropLeft || onCropRight) {
+      cursor('grab');
+    } else {
+      cursor(ARROW)
     }
     // Rulers
     stroke(255, 70);
