@@ -1,3 +1,9 @@
+// To do list:
+//   - save selection as its own format, even if format is .gif
+//   - recenter button, zoom = 1.0 button, esc button
+//   - help button and overlay showing KB and Mouse controls
+
+
 // Load from disk
 // https://stackoverflow.com/questions/42498717/how-to-read-image-file-using-plain-javascript
 // Load from url
@@ -322,7 +328,7 @@ function debugInfo() {
     debugText+= '-, -)';
   }
   debugText+= '\nORIGINAL SIZE: ('+String(img.width)+', '+String(img.height)+')';
-  debugText+= '\nCROP SIZE: ('+String(round(abs(cropA[0]-cropA[2])/zoom))+', '; // Pensar dónde computar los tamaños del crop
+  debugText+= '\nCROP SIZE: ('+String(round(abs(cropA[0]-cropA[2])/zoom))+', ';
   debugText+= String(round(abs(cropA[1]-cropA[3])/zoom))+')';
   text(debugText, 3, height);
 }
