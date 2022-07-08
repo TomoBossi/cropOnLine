@@ -51,6 +51,8 @@ let bgc = 50,
     newLoad = false, // Switch for running code once
     img, // p5.Image object containing the loaded picture
     cropImg, // Cropped copy of the image
+    w, // cropA width
+    h, // cropA height
     onImg = false,
     cropA, // Crop area
     cropMinDistBorder = 15,
@@ -70,7 +72,16 @@ let bgc = 50,
     slideDispX = 0,
     slideDispY = 0,
     cropping = false, // Currently modifying crop area
-    debugText;
+    debugText,
+    index,
+    i,
+    j,
+    k,
+    l,
+    row,
+    col,
+    uintc8,
+    inCrop;
 
 
 
@@ -492,7 +503,7 @@ function mouseWheel(event) {
 
 function keyPressed() {
   // https://www.toptal.com/developers/keycode
-  console.log(keyCode);
+  // console.log(keyCode);
   if (keyCode === 27) {
     reLoad();
   }
@@ -524,7 +535,7 @@ function getImage(e) { // File upload from disk
   // console.log(data64);
   // data:image/png;base64,iVBORw0KGgo
   // data:image/jpeg;base64,/9j/4QC8RX
-  // data:image/gif;base64,R0lGODlh9AE // Doesn't work yet
+  // data:image/gif;base64,R0lGODlh9AE
   // data:application/octet-stream;bas
   try {
     loadImage(data64, function (newImage) { img = newImage });
@@ -575,11 +586,44 @@ function UrlExists(URL) {
 
 
 function saveCropImg() {
+  'use strict';
   if (!cropping) {
     w = round(abs(cropA[0]-cropA[2])/zoom);
     h = round(abs(cropA[1]-cropA[3])/zoom);
     cropImg = createImage(w, h);
-    cropImg.copy(img, cropLeftDisp, cropTopDisp, w, h, 0, 0, w, h);
+    if (format == 'gif') {
+      //cropImg.gifProperties = img.gifProperties; // Not deep copy, shared references.
+      // Possible solution: Build cropImg.gifProperties from the ground-up. Makes code more susceptible to break with future updates. All properties except "frames" are easy:
+      cropImg.gifProperties = {};
+      cropImg.gifProperties.displayIndex = 0;
+      cropImg.gifProperties.loopLimit = img.gifProperties.loopLimit;
+      cropImg.gifProperties.loopCount = img.gifProperties.loopCount;
+      cropImg.gifProperties.frames = new Array(img.gifProperties.numFrames);
+      cropImg.gifProperties.numFrames = img.gifProperties.numFrames;
+      cropImg.gifProperties.playing = img.gifProperties.playing;
+      cropImg.gifProperties.timeDisplayed = img.gifProperties.timeDisplayed;
+      cropImg.gifProperties.lastChangeTime = 0;
+      for (let i = 0; i < cropImg.gifProperties.numFrames; i++) { // For each gif frame
+        cropImg.gifProperties.frames[i] = {};
+        cropImg.gifProperties.frames[i].delay = img.gifProperties.frames[i].delay
+        uintc8 = new Uint8ClampedArray(4*w*h);
+        l = 0;
+        for (let j = 0; j < 4*img.width*img.height; j += 4) { // Slow
+          index = int(j/4);
+          row = floor(index/img.width);
+          col = index%img.width;
+          if (col >= cropLeftDisp && col < cropLeftDisp+w && row >= cropTopDisp && row < cropTopDisp+h) {
+            for (let k = 0; k < 4; k++) {
+              uintc8[l] = img.gifProperties.frames[i].image.data[j+k];
+              l++;
+            }
+          }
+        }
+        cropImg.gifProperties.frames[i].image = new ImageData(uintc8, w, h);
+      }
+    } else {
+      cropImg.copy(img, cropLeftDisp, cropTopDisp, w, h, 0, 0, w, h);
+    }
     cropImg.save('croppedImage', format);
   }
 }
