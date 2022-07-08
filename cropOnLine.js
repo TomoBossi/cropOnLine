@@ -8,7 +8,7 @@ p5.disableFriendlyErrors = false;
 document.addEventListener("keydown", (e) => e.ctrlKey && e.preventDefault()); // Prevent default ctrl + key functionality
 document.addEventListener("contextmenu", (e) => e.preventDefault()); // Prevent context menu popup on right click
 
-let bgc = 35,
+let bgc = 50,
     uibc,
     uihc,
     onLoadButton = false,
@@ -51,6 +51,7 @@ let bgc = 35,
     onCropBottom = false,
     onCropRight = false,
     onCropLeft = false,
+    onCropA = false,
     cropping = false, // Currently modifying crop area
     debugText; // p5.Image object containing the loaded picture
 
@@ -86,7 +87,7 @@ function setup() {
 
 
 function draw() {
-  background(35);
+  background(bgc);
   onLoadButton = false;
   onEnterKey = false;
   onEscKey = false;
@@ -95,6 +96,7 @@ function draw() {
   onCropBottom = false;
   onCropRight = false;
   onCropLeft = false;
+  onCropA = false;
   loadGUI();
   if (img) {
     if (newLoad) {
@@ -110,7 +112,14 @@ function draw() {
     image(img, width/2+hPan*zoom, height/2+vPan*zoom, img.width*zoom, img.height*zoom);
     // Dynamic overlay
     cropA = [hRef, vRef, hRef+img.width*zoom, vRef+img.height*zoom]; // Pensar en cómo actualizar
-    fill(127.5+127.5*cos(frameCount/10), 20);
+    if (cropA[0]>cropA[2]) {
+      cropA = [cropA[2], cropA[1], cropA[0], cropA[3]]
+    }
+    if (cropA[1]>cropA[3]) {
+      cropA = [cropA[0], cropA[3], cropA[2], cropA[1]]
+    }
+
+    fill(127.5+127.5*cos(frameCount/10), 35);
     rectMode(CORNERS);
     noStroke();
     rect(...cropA);
@@ -133,33 +142,37 @@ function draw() {
         onCropLeft = false;
       }
     }
-    if (onImg || onCropTop || onCropBottom || onCropLeft || onCropRight) {
+    onCropA = mouseX>cropA[0] && mouseX<cropA[2] && mouseY>cropA[1] && mouseY<cropA[3];
+    if (onCropA || onCropTop || onCropBottom || onCropLeft || onCropRight) {
       cursor('grab');
     } else {
       cursor(ARROW)
     }
     // Rulers
-    stroke(255, 70);
     strokeWeight(1+2*onCropTop);
+    stroke(127.5+127.5*!onCropTop+onCropTop*127.5*sin(frameCount/10), 50+100*onCropTop);
     line(0, cropA[1], width, cropA[1]); // Top
     strokeWeight(1+2*onCropBottom);
+    stroke(127.5+127.5*!onCropBottom+onCropBottom*127.5*sin(frameCount/10), 50+100*onCropBottom);
     line(0, cropA[3], width, cropA[3]); // Bottom
     strokeWeight(1+2*onCropLeft);
+    stroke(127.5+127.5*!onCropLeft+onCropLeft*127.5*sin(frameCount/10), 50+100*onCropLeft);
     line(cropA[0], 0, cropA[0], height); // Left
     strokeWeight(1+2*onCropRight);
+    stroke(127.5+127.5*!onCropRight+onCropRight*127.5*sin(frameCount/10), 50+100*onCropRight);
     line(cropA[2], 0, cropA[2], height); // Right
     // Borders
     strokeWeight(1+2*onCropTop);
-    stroke(127.5+127.5*sin(frameCount/10), 100+155*onCropTop);
+    stroke(127.5+127.5*sin(frameCount/10), 150+105*onCropTop);
     line(cropA[0], cropA[1], cropA[2], cropA[1]); // Top
     strokeWeight(1+2*onCropBottom);
-    stroke(127.5+127.5*sin(frameCount/10), 100+155*onCropBottom);
+    stroke(127.5+127.5*sin(frameCount/10), 150+105*onCropBottom);
     line(cropA[0], cropA[3], cropA[2], cropA[3]); // Bottom
     strokeWeight(1+2*onCropLeft);
-    stroke(127.5+127.5*sin(frameCount/10), 100+155*onCropLeft);
+    stroke(127.5+127.5*sin(frameCount/10), 150+105*onCropLeft);
     line(cropA[0], cropA[1], cropA[0], cropA[3]); // Left
     strokeWeight(1+2*onCropRight);
-    stroke(127.5+127.5*sin(frameCount/10), 100+155*onCropRight);
+    stroke(127.5+127.5*sin(frameCount/10), 150+105*onCropRight);
     line(cropA[2], cropA[1], cropA[2], cropA[3]); // Right
     // Debug
     debugInfo();
@@ -227,7 +240,7 @@ function updatePan() {
 function reCenter() {
   hPan = 0;
   vPan = 0;
-  zoom = min(width*0.9/img.width, height*0.9/img.height, 1.0);
+  zoom = min(width*0.75/img.width, height*0.75/img.height, 1.0);
 }
 
 
