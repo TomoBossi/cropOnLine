@@ -1,9 +1,8 @@
 // To do list:
 //   - save selection as its own format, even if format is .gif
 //   - infinite undo/redo (history)
-//   - buttons for recenter, undo, redo, zoom = 1.0, esc button
+//   - buttons for undo, redo, recenter, zoom = 1.0, save, esc
 //   - help button and overlay showing KB and Mouse controls
-
 
 // Load from disk
 // https://stackoverflow.com/questions/42498717/how-to-read-image-file-using-plain-javascript
