@@ -1,6 +1,7 @@
 // To do list:
 //   - save selection as its own format, even if format is .gif
-//   - recenter button, zoom = 1.0 button, esc button
+//   - infinite undo/redo (history)
+//   - buttons for recenter, undo, redo, zoom = 1.0, esc button
 //   - help button and overlay showing KB and Mouse controls
 
 
@@ -233,6 +234,8 @@ function draw() {
       cropRightDisp += slideDispX
       slideDispX = 0;
       slideDispY = 0;
+      // Update history (cropTopDisp, cropBottomDisp, etc.)
+      // ...
     }
   }
 }
