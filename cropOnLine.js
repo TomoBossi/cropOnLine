@@ -337,7 +337,7 @@ function debugInfo() {
 
 
 
-function loadGUI() {
+function loadGUI() { // Confusing name, also checks link and if link is valid
   if (!loaded) { // Load menu
     link = linkField.value();
     valid = formatList.includes(link.slice(-4, link.length));
@@ -517,9 +517,21 @@ function reLoad() {
 
 function getImage(e) { // File upload from disk
   let data64 = reader.result;
+  // console.log(data64);
+  // data:image/png;base64,iVBORw0KGgo
+  // data:image/jpeg;base64,/9j/4QC8RX
+  // data:image/gif;base64,R0lGODlh9AE
+  // data:application/octet-stream;bas
   try {
     loadImage(data64, function (newImage) { img = newImage });
     newLoad = true;
+    format = data64.slice(11,14);
+    if (format == 'jpe') {
+      format = 'jpg';
+    } 
+    if (!formatList.includes('.'+format)) {
+      format = 'png';
+    }
     error = false;
   } catch {
     error = true;
@@ -530,8 +542,7 @@ function getImage(e) { // File upload from disk
   linkField.hide();
   reader.onload = getImage;
   reader.readAsDataURL(file.file);
-
-} function loadFromURL(URL) { // File upload from URL https://c.tenor.com/NFjEeHbk-zwAAAAC/cat.gif
+} function loadFromURL(URL) { // File upload from URL i.e. https://c.tenor.com/NFjEeHbk-zwAAAAC/cat.gif
   try {
     error = !UrlExists(URL);
   } catch {
@@ -540,6 +551,7 @@ function getImage(e) { // File upload from disk
   if (!error) {
     loadImage(URL, function (newImage) { img = newImage });
     newLoad = true;
+    format = URL.slice(-3, URL.length);
   }
   loaded = true;
   load.hide();
