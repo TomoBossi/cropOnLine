@@ -49,7 +49,8 @@ let bgc = 50,
     xCoord,
     yCoord,
     newLoad = false, // Switch for running code once
-    img,
+    img, // p5.Image object containing the loaded picture
+    cropImg, // Cropped copy of the image
     onImg = false,
     cropA, // Crop area
     cropMinDistBorder = 15,
@@ -69,7 +70,7 @@ let bgc = 50,
     slideDispX = 0,
     slideDispY = 0,
     cropping = false, // Currently modifying crop area
-    debugText; // p5.Image object containing the loaded picture
+    debugText;
 
 
 
@@ -491,7 +492,7 @@ function mouseWheel(event) {
 
 function keyPressed() {
   // https://www.toptal.com/developers/keycode
-  // console.log(keyCode);
+  console.log(keyCode);
   if (keyCode === 27) {
     reLoad();
   }
@@ -500,6 +501,9 @@ function keyPressed() {
   }
   if (img && keyCode === 82) {
     reCenter();
+  }
+  if (img && keyCode === 13) {
+    saveCropImg();
   }
 }
 
@@ -520,7 +524,7 @@ function getImage(e) { // File upload from disk
   // console.log(data64);
   // data:image/png;base64,iVBORw0KGgo
   // data:image/jpeg;base64,/9j/4QC8RX
-  // data:image/gif;base64,R0lGODlh9AE
+  // data:image/gif;base64,R0lGODlh9AE // Doesn't work yet
   // data:application/octet-stream;bas
   try {
     loadImage(data64, function (newImage) { img = newImage });
@@ -566,4 +570,16 @@ function UrlExists(URL) {
   http.send();
   console.log(http.status);
   return ![0, 404].includes(http.status)
+}
+
+
+
+function saveCropImg() {
+  if (!cropping) {
+    w = round(abs(cropA[0]-cropA[2])/zoom);
+    h = round(abs(cropA[1]-cropA[3])/zoom);
+    cropImg = createImage(w, h);
+    cropImg.copy(img, cropLeftDisp, cropTopDisp, w, h, 0, 0, w, h);
+    cropImg.save('croppedImage', format);
+  }
 }
