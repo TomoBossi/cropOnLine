@@ -523,6 +523,7 @@ function keyPressed() {
 
 function reLoad() {
   img = null;
+  format = null;
   loaded = false;
   error = false;
   load.show();
@@ -590,7 +591,7 @@ function UrlExists(URL) {
 
 
 function saveCropImg() {
-  'use strict';
+  // Bug: Large gifs produce code/color length bug (too many colours?)
   if (!cropping) {
     w = round(abs(cropA[0]-cropA[2])/zoom);
     h = round(abs(cropA[1]-cropA[3])/zoom);
