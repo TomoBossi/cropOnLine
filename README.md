@@ -1,4 +1,4 @@
 # CropOnLine
-Fancy Online Image Cropping Tool (WIP, currently lacks KB + mouse controls help overlay and buttons)
+Minimalistic online image cropping tool
 
 [Launch app](https://tomobossi.github.io/CropOnLine/)
