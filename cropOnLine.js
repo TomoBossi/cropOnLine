@@ -18,7 +18,7 @@ let bgc = 50,
     uibc,
     uihc,
     onLoadButton = false,
-    uipx = 225,
+    uipx,
     loadButtonX,
     loadButtonY,
     loadButtonR,
@@ -90,6 +90,7 @@ function setup() {
   ellipseMode(CENTER);
   imageMode(CENTER);
   createCanvas(windowWidth, windowHeight);
+  uipx = min(width,height)/(2*((1.25*width)>height) + 1.5*((1.25*width)<=height));
   loadButtonX = width/2;
   loadButtonY = height/2;
   loadButtonR = loadButtonX + uipx/2;
@@ -102,10 +103,11 @@ function setup() {
   load.size(uipx, uipx);
   load.position(loadButtonX-uipx/2, loadButtonY-uipx/2);
   // load.style('cursor', 'pointer'); // Doesn't work properly because of "No file selected" text interaction
-  
+
+  'use-strict';
   linkField = createInput('', 'text');
-  linkField.size(uipx-8, 15);
-  linkField.position(loadButtonX-linkField.size().width/2, loadButtonD+10);
+  linkField.size(uipx-8, uipx/17.5);
+  linkField.position(loadButtonX-linkField.size().width/2, loadButtonD+uipx/25);
   linkField.attribute('placeholder', '... or enter an image URL (CTRL+V)');
   
   uibc = color(20, 110, 130);
@@ -441,25 +443,26 @@ function drawLoadingInfoUI() {
 
 
 function drawEnterKey() {
-  onEnterKey = (mouseX<width/2+(uipx/10*1.4)/2)*(mouseX>width/2-(uipx/10*1.4)/2)*(mouseY<loadButtonD+35+uipx/11+(uipx/10)/2)*(mouseY>loadButtonD+35+uipx/11-(uipx/10)/2)
-  onEnterKey+= (mouseX<width/2+0.15*uipx/10+(uipx/10*1.1)/2)*(mouseX>width/2+0.15*uipx/10-(uipx/10*1.1)/2)*(mouseY<loadButtonD+35+uipx/11+0.5*uipx/10+(uipx/10))*(mouseY>loadButtonD+35+uipx/11+0.5*uipx/10-(uipx/10))
+  let yPosDelta = uipx/7.75;
+  onEnterKey = (mouseX<width/2+(uipx/10*1.4)/2)*(mouseX>width/2-(uipx/10*1.4)/2)*(mouseY<loadButtonD+yPosDelta+uipx/11+(uipx/10)/2)*(mouseY>loadButtonD+yPosDelta+uipx/11-(uipx/10)/2)
+  onEnterKey+= (mouseX<width/2+0.15*uipx/10+(uipx/10*1.1)/2)*(mouseX>width/2+0.15*uipx/10-(uipx/10*1.1)/2)*(mouseY<loadButtonD+yPosDelta+uipx/11+0.5*uipx/10+(uipx/10))*(mouseY>loadButtonD+yPosDelta+uipx/11+0.5*uipx/10-(uipx/10))
   fill(40+20*valid);
   if (valid && onEnterKey) {
     fill(uibc);
   }
   stroke(70+120*valid);
   strokeWeight(uipx/50);
-  rect(width/2, loadButtonD+35+uipx/11, uipx/10*1.4, uipx/10, 3);
-  rect(width/2+0.15*uipx/10, loadButtonD+35+uipx/11+0.5*uipx/10, uipx/10*1.1, uipx/10*2, 3);
+  rect(width/2, loadButtonD+yPosDelta+uipx/11, uipx/10*1.4, uipx/10, 3);
+  rect(width/2+0.15*uipx/10, loadButtonD+yPosDelta+uipx/11+0.5*uipx/10, uipx/10*1.1, uipx/10*2, 3);
   noStroke();
-  rect(width/2, loadButtonD+35+uipx/11, uipx/10*1.4, uipx/10, 3);
-  rect(width/2+0.15*uipx/10, loadButtonD+35+uipx/11+0.5*uipx/10, uipx/10*1.1, uipx/10*2, 3);
+  rect(width/2, loadButtonD+yPosDelta+uipx/11, uipx/10*1.4, uipx/10, 3);
+  rect(width/2+0.15*uipx/10, loadButtonD+yPosDelta+uipx/11+0.5*uipx/10, uipx/10*1.1, uipx/10*2, 3);
   stroke(120+120*valid);
   fill(120+120*valid);
   strokeWeight(uipx/100);
-  line(width/2-uipx/50, loadButtonD+35+uipx/11+uipx/100, width/2+uipx/30, loadButtonD+35+uipx/11+uipx/100);
-  line(width/2+uipx/30, loadButtonD+35+uipx/11+uipx/100, width/2+uipx/30, loadButtonD+35+uipx/11-uipx/75);
-  triangle(width/2-uipx/50, loadButtonD+35+uipx/11+uipx/100+uipx/125, width/2-uipx/50, loadButtonD+35+uipx/11+uipx/100-uipx/125, width/2-uipx/50-uipx/100, loadButtonD+35+uipx/11+uipx/100)
+  line(width/2-uipx/50, loadButtonD+yPosDelta+uipx/11+uipx/100, width/2+uipx/30, loadButtonD+yPosDelta+uipx/11+uipx/100);
+  line(width/2+uipx/30, loadButtonD+yPosDelta+uipx/11+uipx/100, width/2+uipx/30, loadButtonD+yPosDelta+uipx/11-uipx/75);
+  triangle(width/2-uipx/50, loadButtonD+yPosDelta+uipx/11+uipx/100+uipx/125, width/2-uipx/50, loadButtonD+yPosDelta+uipx/11+uipx/100-uipx/125, width/2-uipx/50-uipx/100, loadButtonD+yPosDelta+uipx/11+uipx/100)
 }
 
 
@@ -597,7 +600,7 @@ function saveCropImg() {
     h = round(abs(cropA[1]-cropA[3])/zoom);
     cropImg = createImage(w, h);
     if (format == 'gif') {
-      //cropImg.gifProperties = img.gifProperties; // Not deep copy, shared references.
+      // cropImg.gifProperties = img.gifProperties; // Not deep copy, shared references.
       // Possible solution: Build cropImg.gifProperties from the ground-up. Makes code more susceptible to break with future updates. All properties except "frames" are easy:
       cropImg.gifProperties = {};
       cropImg.gifProperties.displayIndex = 0;
