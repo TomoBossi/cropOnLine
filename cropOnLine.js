@@ -109,7 +109,7 @@ function setup() {
   linkField = createInput('', 'text');
   linkField.size(uipx-8, uipx/17.5);
   linkField.position(loadButtonX-linkField.size().width/2, loadButtonD+uipx/25);
-  linkField.attribute('placeholder', '... or enter an image URL (CTRL+V)');
+  linkField.attribute('placeholder', ' ... or enter an image URL (CTRL+V)');
   
   uibc = color(20, 110, 130);
   uihc = color(100, 250, 250);
