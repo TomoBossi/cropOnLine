@@ -339,7 +339,7 @@ function debugInfo() {
   fill(255,160);
   stroke(0,160);
   strokeWeight(3);
-  textSize(15);
+  textSize(20);
   debugText = 'ZOOM: '+String(zoom.toFixed(3))+'\nPIXEL COORDS: (';
   if (onImg) {
     debugText+= String(xCoord)+', '+String(yCoord)+')';
@@ -360,7 +360,7 @@ function helpInfo() {
   fill(255,160);
   stroke(0,160);
   strokeWeight(3);
-  textSize(15);
+  textSize(20);
   textStyle(BOLD);
   if (mouseX + mouseY > 50) {
     infoText = 'INFO (hover)';
@@ -368,10 +368,11 @@ function helpInfo() {
     noCursor();
     textStyle(NORMAL);
     infoText = 'CROP: press and hold LMB on the rulers or the crop area itself and drag (mouse)';
-    infoText+= '\n\nZOOM: +/- keys (KB) // scroll (mouse or trackpad) // press and hold mousewheel and drag up or down (mouse)';
-    infoText+= '\n\nPAN: WASD or arrow keys (KB) // hold RMB and drag (mouse)';
-    infoText+= '\n\nSAVE: to save the cropped image, press ENTER key (KB)';
-    infoText+= '\n\nQUIT: to load a new image, press ESC key (KB)';
+    infoText+= '\nZOOM: +/- keys (KB) // scroll (mousewheel or trackpad) // press and hold mousewheel and drag up or down (mouse)';
+    infoText+= '\nPAN: press and hold WASD or arrow keys (KB) // press and hold RMB and drag (mouse)';
+    infoText+= '\nRESET VIEW: to reset the zoom and pan values to default press R key, or 1 key to set zoom to 1.0 (KB)';
+    infoText+= '\nSAVE: to save the cropped image, press ENTER key (KB)';
+    infoText+= '\nQUIT: to load a new image, press ESC key (KB)';
   }
   rectMode(CORNERS);
   text(infoText, 3, 3, width-3, height-3);
@@ -546,7 +547,7 @@ function mouseWheel(event) {
 
 function keyPressed() {
   // https://www.toptal.com/developers/keycode
-  console.log(keyCode);
+  // console.log(keyCode);
   if (keyCode === 27) {
     reLoad();
   }
@@ -556,7 +557,7 @@ function keyPressed() {
   if (img && keyCode === 82) {
     reCenter();
   }
-  if (img && keyCode === 49) {
+  if (img && (keyCode === 49 || keyCode === 35 || keyCode === 97)) {
     reCenter();
     zoom = 1.0;
   }
