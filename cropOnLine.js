@@ -72,7 +72,9 @@ let bgc = 50,
     slideDispX = 0,
     slideDispY = 0,
     cropping = false, // Currently modifying crop area
+    clickingToCrop = false, // Started mousepress to crop
     debugText,
+    infoText,
     index,
     i,
     j,
@@ -104,7 +106,6 @@ function setup() {
   load.position(loadButtonX-uipx/2, loadButtonY-uipx/2);
   // load.style('cursor', 'pointer'); // Doesn't work properly because of "No file selected" text interaction
 
-  'use-strict';
   linkField = createInput('', 'text');
   linkField.size(uipx-8, uipx/17.5);
   linkField.position(loadButtonX-linkField.size().width/2, loadButtonD+uipx/25);
@@ -130,7 +131,7 @@ function draw() {
     onCropLeft = false;
     onCropA = false;
   }
-  loadGUI();
+  loading();
   if (img) {
     if (newLoad) {
       newLoad = false;
@@ -216,10 +217,11 @@ function draw() {
     strokeWeight(1+2*onCropRight*!cropping);
     stroke(127.5+127.5*sin(frameCount/10), 150+105*onCropRight);
     line(cropA[2], cropA[1], cropA[2], cropA[3]); // Right
-    // Debug
+    // Help && Debug
+    helpInfo();
     debugInfo();
 
-    if (mouseIsPressed && mouseButton === LEFT && (onCropA || onCropTop || onCropBottom || onCropLeft || onCropRight)) {
+    if (mouseIsPressed && clickingToCrop && mouseButton === LEFT && (onCropA || onCropTop || onCropBottom || onCropLeft || onCropRight)) {
       cropping = true;
       if (onCropTop || onCropBottom || onCropLeft || onCropRight) {
         if (onCropTop) {
@@ -352,7 +354,33 @@ function debugInfo() {
 
 
 
-function loadGUI() { // Confusing name, also checks link and if link is valid
+function helpInfo() {
+  textAlign(LEFT, TOP);
+  textFont('calibri');
+  fill(255,160);
+  stroke(0,160);
+  strokeWeight(3);
+  textSize(15);
+  textStyle(BOLD);
+  if (mouseX + mouseY > 50) {
+    infoText = 'INFO (hover)';
+  } else {
+    noCursor();
+    textStyle(NORMAL);
+    infoText = 'CROP: press and hold LMB on the rulers or the crop area itself and drag (mouse)';
+    infoText+= '\n\nZOOM: +/- keys (KB) // scroll (mouse or trackpad) // press and hold mousewheel and drag up or down (mouse)';
+    infoText+= '\n\nPAN: WASD or arrow keys (KB) // hold RMB and drag (mouse)';
+    infoText+= '\n\nSAVE: to save the cropped image, press ENTER key (KB)';
+    infoText+= '\n\nQUIT: to load a new image, press ESC key (KB)';
+  }
+  rectMode(CORNERS);
+  text(infoText, 3, 3, width-3, height-3);
+  rectMode(CENTER);
+}
+
+
+
+function loading() {
   if (!loaded) { // Load menu
     link = linkField.value();
     valid = formatList.includes(link.slice(-4, link.length));
@@ -430,10 +458,10 @@ function drawLoadingInfoUI() {
   strokeWeight(3);
   text('github.com/TomoBossi/CropOnLine', width/2, height-uipx/16);
   fill(160);
-  textSize(uipx/15);
-  text('supported formats:', width/2, uipx/4);
   textSize(uipx/14);
-  text('.png .jpg .gif', width/2, uipx/3);
+  text('supported formats: .png .jpg .gif', width/2, uipx/4);
+  textSize(uipx/17.5);
+  text('requires keyboard and mouse/trackpad', width/2, uipx/4+2*uipx/15);
   fill(180);
   textSize(uipx/13);
   textStyle(BOLDITALIC);
@@ -495,6 +523,17 @@ function mousePressed() {
   if (onEscKey) {
     reLoad();
   }
+  if (mouseButton === LEFT && (onCropA || onCropTop || onCropBottom || onCropLeft || onCropRight)) {
+    clickingToCrop = true;
+  }
+}
+
+
+
+function mouseReleased() {
+  if (mouseButton === LEFT) {
+    clickingToCrop = false;
+  }
 }
 
 
@@ -507,7 +546,7 @@ function mouseWheel(event) {
 
 function keyPressed() {
   // https://www.toptal.com/developers/keycode
-  // console.log(keyCode);
+  console.log(keyCode);
   if (keyCode === 27) {
     reLoad();
   }
@@ -516,6 +555,10 @@ function keyPressed() {
   }
   if (img && keyCode === 82) {
     reCenter();
+  }
+  if (img && keyCode === 49) {
+    reCenter();
+    zoom = 1.0;
   }
   if (img && keyCode === 13) {
     saveCropImg();
