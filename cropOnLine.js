@@ -1,8 +1,7 @@
 // To do list:
-//   - save selection as its own format, even if format is .gif
 //   - infinite undo/redo (history)
 //   - buttons for undo, redo, recenter, zoom = 1.0, save, esc
-//   - help button and overlay showing KB and Mouse controls
+//   - help button and improved overlay showing KB and Mouse controls
 
 // Load from disk
 // https://stackoverflow.com/questions/42498717/how-to-read-image-file-using-plain-javascript
@@ -31,6 +30,7 @@ let bgc = 50,
     link,
     valid, // Valid link
     onEnterKey = false,
+    enterKeyYPosDelta,
     formatList = ['.png', '.jpg', '.gif'],
     format, // Format of currently opened picture
     http,
@@ -99,12 +99,12 @@ function setup() {
   loadButtonL = loadButtonX - uipx/2;
   loadButtonU = loadButtonY - uipx/2;
   loadButtonD = loadButtonY + uipx/2;
+  enterKeyYPosDelta = uipx/7.75;
 
   load = createFileInput(loadFile);
   load.elt.style = "opacity: 0";
   load.size(uipx, uipx);
   load.position(loadButtonX-uipx/2, loadButtonY-uipx/2);
-  // load.style('cursor', 'pointer'); // Doesn't work properly because of "No file selected" text interaction
 
   linkField = createInput('', 'text');
   linkField.size(uipx-8, uipx/17.5);
@@ -472,26 +472,25 @@ function drawLoadingInfoUI() {
 
 
 function drawEnterKey() {
-  let yPosDelta = uipx/7.75;
-  onEnterKey = (mouseX<width/2+(uipx/10*1.4)/2)*(mouseX>width/2-(uipx/10*1.4)/2)*(mouseY<loadButtonD+yPosDelta+uipx/11+(uipx/10)/2)*(mouseY>loadButtonD+yPosDelta+uipx/11-(uipx/10)/2)
-  onEnterKey+= (mouseX<width/2+0.15*uipx/10+(uipx/10*1.1)/2)*(mouseX>width/2+0.15*uipx/10-(uipx/10*1.1)/2)*(mouseY<loadButtonD+yPosDelta+uipx/11+0.5*uipx/10+(uipx/10))*(mouseY>loadButtonD+yPosDelta+uipx/11+0.5*uipx/10-(uipx/10))
+  onEnterKey = (mouseX<width/2+(uipx/10*1.4)/2)*(mouseX>width/2-(uipx/10*1.4)/2)*(mouseY<loadButtonD+enterKeyYPosDelta+uipx/11+(uipx/10)/2)*(mouseY>loadButtonD+enterKeyYPosDelta+uipx/11-(uipx/10)/2)
+  onEnterKey+= (mouseX<width/2+0.15*uipx/10+(uipx/10*1.1)/2)*(mouseX>width/2+0.15*uipx/10-(uipx/10*1.1)/2)*(mouseY<loadButtonD+enterKeyYPosDelta+uipx/11+0.5*uipx/10+(uipx/10))*(mouseY>loadButtonD+enterKeyYPosDelta+uipx/11+0.5*uipx/10-(uipx/10))
   fill(40+20*valid);
   if (valid && onEnterKey) {
     fill(uibc);
   }
   stroke(70+120*valid);
   strokeWeight(uipx/50);
-  rect(width/2, loadButtonD+yPosDelta+uipx/11, uipx/10*1.4, uipx/10, 3);
-  rect(width/2+0.15*uipx/10, loadButtonD+yPosDelta+uipx/11+0.5*uipx/10, uipx/10*1.1, uipx/10*2, 3);
+  rect(width/2, loadButtonD+enterKeyYPosDelta+uipx/11, uipx/10*1.4, uipx/10, 3);
+  rect(width/2+0.15*uipx/10, loadButtonD+enterKeyYPosDelta+uipx/11+0.5*uipx/10, uipx/10*1.1, uipx/10*2, 3);
   noStroke();
-  rect(width/2, loadButtonD+yPosDelta+uipx/11, uipx/10*1.4, uipx/10, 3);
-  rect(width/2+0.15*uipx/10, loadButtonD+yPosDelta+uipx/11+0.5*uipx/10, uipx/10*1.1, uipx/10*2, 3);
+  rect(width/2, loadButtonD+enterKeyYPosDelta+uipx/11, uipx/10*1.4, uipx/10, 3);
+  rect(width/2+0.15*uipx/10, loadButtonD+enterKeyYPosDelta+uipx/11+0.5*uipx/10, uipx/10*1.1, uipx/10*2, 3);
   stroke(120+120*valid);
   fill(120+120*valid);
   strokeWeight(uipx/100);
-  line(width/2-uipx/50, loadButtonD+yPosDelta+uipx/11+uipx/100, width/2+uipx/30, loadButtonD+yPosDelta+uipx/11+uipx/100);
-  line(width/2+uipx/30, loadButtonD+yPosDelta+uipx/11+uipx/100, width/2+uipx/30, loadButtonD+yPosDelta+uipx/11-uipx/75);
-  triangle(width/2-uipx/50, loadButtonD+yPosDelta+uipx/11+uipx/100+uipx/125, width/2-uipx/50, loadButtonD+yPosDelta+uipx/11+uipx/100-uipx/125, width/2-uipx/50-uipx/100, loadButtonD+yPosDelta+uipx/11+uipx/100)
+  line(width/2-uipx/50, loadButtonD+enterKeyYPosDelta+uipx/11+uipx/100, width/2+uipx/30, loadButtonD+enterKeyYPosDelta+uipx/11+uipx/100);
+  line(width/2+uipx/30, loadButtonD+enterKeyYPosDelta+uipx/11+uipx/100, width/2+uipx/30, loadButtonD+enterKeyYPosDelta+uipx/11-uipx/75);
+  triangle(width/2-uipx/50, loadButtonD+enterKeyYPosDelta+uipx/11+uipx/100+uipx/125, width/2-uipx/50, loadButtonD+enterKeyYPosDelta+uipx/11+uipx/100-uipx/125, width/2-uipx/50-uipx/100, loadButtonD+enterKeyYPosDelta+uipx/11+uipx/100)
 }
 
 
@@ -660,7 +659,7 @@ function saveCropImg() {
         cropImg.gifProperties.frames[i].delay = img.gifProperties.frames[i].delay
         uintc8 = new Uint8ClampedArray(4*w*h);
         l = 0;
-        for (let j = 0; j < 4*img.width*img.height; j += 4) { // Slow
+        for (let j = 0; j < 4*img.width*img.height; j += 4) { // This is, of course, very slow for larger crops with lots of frames
           index = int(j/4);
           row = floor(index/img.width);
           col = index%img.width;
